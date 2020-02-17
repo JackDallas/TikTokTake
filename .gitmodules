@@ -1,0 +1,6 @@
+[submodule "node/tiktok-signature"]
+	path = node/tiktok-signature
+	url = https://github.com/carcabot/tiktok-signature
+[submodule "libs/tiktok-signature"]
+	path = libs/tiktok-signature
+	url = https://github.com/carcabot/tiktok-signature

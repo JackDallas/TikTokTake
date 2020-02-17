@@ -17,17 +17,12 @@ import (
 func main() {
 	args := os.Args[1:]
 
-	// exitCode := 0
-
 	if len(args) == 1 {
 		scrapeUserVideos(args[0])
+	} else {
+		fmt.Println("Need 1 argument, url of account")
+		os.Exit(1)
 	}
-	// else {
-	// 	fmt.Println("Need 1 argument, url of account")
-	// 	exitCode = 1
-	// }
-
-	// os.Exit(exitCode)
 }
 
 func scrapeUserVideos(url string) {

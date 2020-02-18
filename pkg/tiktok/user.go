@@ -75,30 +75,49 @@ func getUserDetails(username string) (structs.TikTokMeta, error) {
 }
 
 // GetVideos : returns a list of video urls for a user
-// TODO: Pagination
 func (user *User) GetVideos() ([]string, error) {
-	jsonURL := fmt.Sprintf("https://m.tiktok.com/share/item/list?secUid=%s&id=%s&type=1&count=30&minCursor=0&maxCursor=0&shareUid=&lang=",
-		user.Metadata.Props.PageProps.UserData.SecUID,
-		user.Metadata.Props.PageProps.UserData.UserID)
-
-	// the webtoken is unused for now but will be implemented later
-	signature, err := GenerateSignature(jsonURL, "window."+user.Metadata.Query.Webtoken)
-	if err != nil {
-		return []string{}, err
-	}
-
-	jsonURL = jsonURL + "&_signature=" + signature
-	jsonURL = strings.TrimSpace(jsonURL)
-
-	json, err := client.GetTikTokJSONPage(jsonURL, "https://tiktok.com/@"+user.Username)
-	if err != nil {
-		return []string{}, err
-	}
-
 	var urlList []string
-	for _, item := range json.Body.ItemListData {
-		if len(item.ItemInfos.Video.Urls) > 0 {
-			urlList = append(urlList, item.ItemInfos.Video.Urls[0])
+
+	maxCursor := "0"
+	running := true
+
+	for running {
+		jsonURL := fmt.Sprintf("https://m.tiktok.com/share/item/list?secUid=%s&id=%s&type=1&count=30&minCursor=0&maxCursor=%s&shareUid=&lang=",
+			user.Metadata.Props.PageProps.UserData.SecUID,
+			user.Metadata.Props.PageProps.UserData.UserID,
+			maxCursor)
+
+		// the webtoken is unused for now but will be implemented later
+		signature, err := GenerateSignature(jsonURL, "window."+user.Metadata.Query.Webtoken)
+		if err != nil {
+			return []string{}, err
+		}
+
+		jsonURL = jsonURL + "&_signature=" + signature
+		jsonURL = strings.TrimSpace(jsonURL)
+
+		json, err := client.GetTikTokJSONPage(jsonURL, "https://tiktok.com/@"+user.Username)
+		if err != nil {
+			log.Debug(err.Error())
+			running = false
+			break
+		}
+
+		for _, item := range json.Body.ItemListData {
+			if len(item.ItemInfos.Video.Urls) > 0 {
+				urlList = append(urlList, item.ItemInfos.Video.Urls[0])
+			}
+		}
+
+		// Handle paging
+
+		if len(json.Body.MaxCursor) == 0 {
+			running = false
+		} else if maxCursor != json.Body.MaxCursor {
+			maxCursor = json.Body.MaxCursor
+			log.Debug("Next max cursor: " + maxCursor)
+		} else {
+			running = false
 		}
 	}
 

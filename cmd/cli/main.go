@@ -22,9 +22,6 @@ func main() {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
-		for _, url := range urls {
-			log.Println(url)
-		}
 		log.Printf("Found %v videos for user @%s", len(urls), user.Username)
 	} else {
 		fmt.Println("Need 1 argument, username of account")

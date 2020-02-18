@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -44,7 +45,7 @@ func downloadAllURLs(urls []string, username string) {
 		go func(url, username string, i int) {
 			defer wg.Done()
 
-			httptiktok.DownloadVideo(url, string(i), username)
+			httptiktok.DownloadVideo(url, strconv.FormatInt(int64(i), 10), username)
 			log.Debugf("Downloaded %v/%v\n", i, len(urls))
 		}(url, username, i)
 	}

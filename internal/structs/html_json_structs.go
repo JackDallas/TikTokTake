@@ -1,4 +1,4 @@
-package main
+package structs
 
 type TikTokMeta struct {
 	Props       Props  `json:"props"`

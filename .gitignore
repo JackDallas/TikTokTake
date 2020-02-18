@@ -1,3 +1,5 @@
 node_modules/
 tiktok_grabber
 tmp/
+build/
+.vscode/

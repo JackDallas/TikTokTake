@@ -1,4 +1,4 @@
-package main
+package structs
 
 type ListJSON struct {
 	StatusCode int         `json:"statusCode"`

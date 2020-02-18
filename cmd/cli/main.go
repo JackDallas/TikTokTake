@@ -3,7 +3,10 @@ package main
 import (
 	"fmt"
 	"os"
+	"sync"
+	"time"
 
+	httptiktok "github.com/JackDallas/TikTokTake/internal/httptiktok"
 	tiktok "github.com/JackDallas/TikTokTake/pkg/tiktok"
 	log "github.com/sirupsen/logrus"
 )
@@ -23,8 +26,28 @@ func main() {
 			log.Fatal(err.Error())
 		}
 		log.Printf("Found %v videos for user @%s", len(urls), user.Username)
+		downloadAllURLs(urls, user.Username)
 	} else {
 		fmt.Println("Need 1 argument, username of account")
 		os.Exit(1)
 	}
+}
+
+func downloadAllURLs(urls []string, username string) {
+	log.Debugf("Downloading %v videos...\n", len(urls))
+	t1 := time.Now()
+	var wg sync.WaitGroup
+
+	for i, url := range urls {
+		wg.Add(1)
+
+		go func(url, username string, i int) {
+			defer wg.Done()
+
+			httptiktok.DownloadVideo(url, string(i), username)
+			log.Debugf("Downloaded %v/%v\n", i, len(urls))
+		}(url, username, i)
+	}
+	wg.Wait()
+	log.Debugf("Downloaded %v videos in %vs", len(urls), time.Since(t1).Seconds())
 }

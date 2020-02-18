@@ -31,4 +31,4 @@ jobs:
       run: go build -v -o build/cli ./cmd/cli
 
     - name: Build server
-      run: go build -v -o build/server ./cmd/server
+      run: go build -v -o build/ircserver ./cmd/ircserver

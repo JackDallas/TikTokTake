@@ -1,4 +1,4 @@
-package tiktok
+package download
 
 import (
 	"io/ioutil"
@@ -8,9 +8,8 @@ import (
 	"path"
 )
 
-// DownloadVideo :
-// TODO return bytes when warc impl is done
-func DownloadVideo(url, fileName, saveLoc string) error {
+// Video :
+func Video(url, fileName, saveLoc string) error {
 	// Create the directory to store the video
 	ex, err := os.Executable()
 	if err != nil {

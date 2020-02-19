@@ -6,8 +6,6 @@ import (
 	"strings"
 
 	irc "github.com/thoj/go-ircevent"
-
-	tiktok "github.com/JackDallas/TikTokTake/pkg/tiktok"
 )
 
 const channel = "#TikTokBot"
@@ -54,14 +52,8 @@ func handleMSG(args string) string {
 
 		case "!user":
 			if len(command) == 2 {
-				go func(username string) {
-					User, err := tiktok.NewUser(username)
-					if err != nil {
-						irccon.Privmsgf(channel, "Error getting user %s, %e", username, err)
-					}
-					urls, err := User.GetVideos()
-					irccon.Privmsgf(channel, "Found %v videos for %s", len(urls), username)
-				}(command[1])
+				go archiveUser(command[1])
+
 				return fmt.Sprintf("Queuing job to archive user: %s", command[1])
 			}
 			return "Invalid Usage: !user <username>"

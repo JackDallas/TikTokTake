@@ -16,24 +16,25 @@ import (
 
 //User : A TikTok user account
 type User struct {
-	Username string
-	Metadata structs.TikTokMeta
+	Username       string
+	Metadata       structs.TikTokMeta
+	ProfileRequest *http.Request
 }
 
 //NewUser : Creates and validates a TikTok user account
 func NewUser(username string) (User, error) {
-	userMeta, err := getUserDetails(username)
+	userMeta, req, err := getUserDetails(username)
 	if err != nil {
 		log.Errorf("Could not find user %s: %s", username, err.Error())
 		return User{}, err
 	}
-	return User{username, userMeta}, nil
+	return User{username, userMeta, req}, nil
 }
 
 //TODO: see if this can be used on all HTML pages
-func getUserDetails(username string) (structs.TikTokMeta, error) {
+func getUserDetails(username string) (structs.TikTokMeta, *http.Request, error) {
 	if len(username) == 0 {
-		return structs.TikTokMeta{}, errors.New("empty username")
+		return structs.TikTokMeta{}, nil, errors.New("empty username")
 	}
 
 	if username[0] == '@' {
@@ -41,10 +42,15 @@ func getUserDetails(username string) (structs.TikTokMeta, error) {
 		log.Debug("Username starts with @ stripping to become : " + username)
 	}
 
-	resp, err := MakeTikTokRequest("GET", "https://tiktok.com/@"+username)
-
+	client := &http.Client{}
+	req, err := NewHTMLRequest("GET", "https://tiktok.com/@"+username)
 	if err != nil {
-		return structs.TikTokMeta{}, err
+		return structs.TikTokMeta{}, nil, err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return structs.TikTokMeta{}, nil, err
 	}
 
 	defer resp.Body.Close()
@@ -52,7 +58,7 @@ func getUserDetails(username string) (structs.TikTokMeta, error) {
 	if resp.StatusCode == http.StatusOK {
 		bodyBytes, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return structs.TikTokMeta{}, err
+			return structs.TikTokMeta{}, nil, err
 		}
 
 		re := regexp.MustCompile(`(?m)<script id="__NEXT_DATA__" type="application/json" crossorigin="anonymous">.+?</script>`)
@@ -65,17 +71,19 @@ func getUserDetails(username string) (structs.TikTokMeta, error) {
 
 			var meta structs.TikTokMeta
 			json.Unmarshal([]byte(metaString), &meta)
-			return meta, nil
+			return meta, req, nil
 		}
-		return structs.TikTokMeta{}, errors.New("No metadata found")
+		return structs.TikTokMeta{}, nil, errors.New("No metadata found")
 	}
 
-	return structs.TikTokMeta{}, errors.New("Non OK status code, User may not exist: " + err.Error())
+	return structs.TikTokMeta{}, nil, errors.New("Non OK status code, User may not exist: " + err.Error())
 }
 
 // GetVideos : returns a list of video urls for a user
-func (user *User) GetVideos() ([]string, error) {
-	var urlList []string
+func (user *User) GetVideos() ([]*http.Request, error) {
+	client := &http.Client{}
+	var urlList []*http.Request
+	referer := "https://tiktok.com/@" + user.Username
 
 	maxCursor := "0"
 	running := true
@@ -89,13 +97,27 @@ func (user *User) GetVideos() ([]string, error) {
 		// the webtoken is unused for now but will be implemented later
 		signature, err := GenerateSignature(jsonURL, "window."+user.Metadata.Query.Webtoken)
 		if err != nil {
-			return []string{}, err
+			return []*http.Request{}, err
 		}
 
 		jsonURL = jsonURL + "&_signature=" + signature
 		jsonURL = strings.TrimSpace(jsonURL)
 
-		json, err := GetTikTokJSONPage(jsonURL, "https://tiktok.com/@"+user.Username)
+		req, err := NewJSONRequest(jsonURL, referer)
+		if err != nil {
+			log.Debug(err.Error())
+			running = false
+			break
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Debug(err.Error())
+			running = false
+			break
+		}
+
+		json, err := DecodeJSONRequest(resp)
 		if err != nil {
 			log.Debug(err.Error())
 			running = false
@@ -104,7 +126,12 @@ func (user *User) GetVideos() ([]string, error) {
 
 		for _, item := range json.Body.ItemListData {
 			if len(item.ItemInfos.Video.Urls) > 0 {
-				urlList = append(urlList, item.ItemInfos.Video.Urls[0])
+				nextURL, error := NewVideoRequest(item.ItemInfos.Video.Urls[0], referer)
+				if err != nil {
+					log.Errorf("Error making video request: %s", error.Error())
+				} else {
+					urlList = append(urlList, nextURL)
+				}
 			}
 		}
 

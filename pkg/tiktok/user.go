@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"strings"
 
-	client "github.com/JackDallas/TikTokTake/internal/httptiktok"
 	structs "github.com/JackDallas/TikTokTake/internal/structs"
 
 	log "github.com/sirupsen/logrus"
@@ -42,7 +41,7 @@ func getUserDetails(username string) (structs.TikTokMeta, error) {
 		log.Debug("Username starts with @ stripping to become : " + username)
 	}
 
-	resp, err := client.MakeTikTokRequest("GET", "https://tiktok.com/@"+username)
+	resp, err := MakeTikTokRequest("GET", "https://tiktok.com/@"+username)
 
 	if err != nil {
 		return structs.TikTokMeta{}, err
@@ -96,7 +95,7 @@ func (user *User) GetVideos() ([]string, error) {
 		jsonURL = jsonURL + "&_signature=" + signature
 		jsonURL = strings.TrimSpace(jsonURL)
 
-		json, err := client.GetTikTokJSONPage(jsonURL, "https://tiktok.com/@"+user.Username)
+		json, err := GetTikTokJSONPage(jsonURL, "https://tiktok.com/@"+user.Username)
 		if err != nil {
 			log.Debug(err.Error())
 			running = false

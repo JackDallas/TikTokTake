@@ -1,4 +1,4 @@
-package httptiktok
+package tiktok
 
 import (
 	"io/ioutil"

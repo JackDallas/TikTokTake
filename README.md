@@ -9,4 +9,4 @@ Todo's in order of priority
 - WARC all requests
 - Replace the `libs/tiktok-signature` submodule with something either native or a v8 instance inside the program that can generate the signatures
 
-- Generalising the requests made in `user.go` and `httptiktok.go`
+- Generalising the requests made in `user.go` and `request.go`

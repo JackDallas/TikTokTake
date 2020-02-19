@@ -1,4 +1,4 @@
-package httptiktok
+package tiktok
 
 import (
 	"encoding/json"

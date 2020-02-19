@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	httptiktok "github.com/JackDallas/TikTokTake/internal/httptiktok"
 	tiktok "github.com/JackDallas/TikTokTake/pkg/tiktok"
 	log "github.com/sirupsen/logrus"
 )
@@ -45,7 +44,7 @@ func downloadAllURLs(urls []string, username string) {
 		go func(url, username string, i int) {
 			defer wg.Done()
 
-			httptiktok.DownloadVideo(url, strconv.FormatInt(int64(i), 10), username)
+			tiktok.DownloadVideo(url, strconv.FormatInt(int64(i), 10), username)
 			log.Debugf("Downloaded %v/%v\n", i, len(urls))
 		}(url, username, i)
 	}

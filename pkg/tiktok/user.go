@@ -57,6 +57,7 @@ func getUserDetails(username string) (structs.TikTokMeta, *http.Request, error) 
 
 	if resp.StatusCode == http.StatusOK {
 		bodyBytes, err := ioutil.ReadAll(resp.Body)
+
 		if err != nil {
 			return structs.TikTokMeta{}, nil, err
 		}
@@ -136,7 +137,6 @@ func (user *User) GetVideos() ([]*http.Request, error) {
 		}
 
 		// Handle paging
-
 		if len(json.Body.MaxCursor) == 0 {
 			running = false
 		} else if maxCursor != json.Body.MaxCursor {

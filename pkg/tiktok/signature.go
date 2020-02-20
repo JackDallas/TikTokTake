@@ -3,17 +3,19 @@ package tiktok
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // GenerateSignature : Generates a TikTok Signature for use in requests
 func GenerateSignature(url string, tac string) (string, error) {
 	ex, err := os.Executable()
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		return "", err
 	}
 
 	dir := path.Dir(ex)

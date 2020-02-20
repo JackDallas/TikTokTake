@@ -46,7 +46,8 @@ func (warc *WARC) MakeRequest(req *http.Request) error {
 
 	err = cmd.Run()
 	if err != nil {
-		log.Fatalf("Error running wget: %s, stderr: %s", err.Error(), outErr.String())
+		log.Errorf("Error running wget: %s, stderr: %s", err.Error(), outErr.String())
+		return err
 	}
 
 	return nil

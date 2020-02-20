@@ -27,8 +27,14 @@ jobs:
         mkdir -p build
         cp -r libs/ build
 
-    - name: Build cli
-      run: go build -v -o build/cli ./cmd/cli
+    - name: Build Tracker
+      run: go build -v -o build/tiktoktracker ./cmd/TikTokTracker
+    
+    - name: Build CLI
+      run: go build -v -o build/tiktok ./cmd/TikTokCLI
 
-    - name: Build server
-      run: go build -v -o build/ircserver ./cmd/ircserver
+    - name: Build Crawler
+      run: go build -v -o build/tiktokcrawler ./cmd/TikTokCrawler
+
+    - name: Build IRCBot
+      run: go build -v -o build/tiktokirc ./cmd/TikTokIRCBot
